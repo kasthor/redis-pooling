@@ -1,4 +1,4 @@
-#Redis Pooling - A NodeJs module for creating redis connection pool
+# Redis Pooling - A NodeJs module for creating redis connection pool
 [Redis Pooling - v1.0.11](https://npmjs.com/package/redis-pooling)
 
 This is a simple module for creating redis connection pool, it depends on NodeJS [redis module](https://github.com/NodeRedis/node_redis) and commands are almost the same
@@ -6,15 +6,15 @@ besides it allows you to set maximum number of connections and distribute reques
 Note: if maximum amount of connections is set to some number `X` then available connections will be no more then `X`, it can 
 vary based on traffic
  
-##Getting started
+## Getting started
 
-####Installation
+#### Installation
 you can use `npm` for installing this module
 
 `npm install redis-pooling`
 
 
-####Configure
+#### Configure
 All you need is to require module and give it config object which should should have 'maxPoolSize' and 'credentials'
 properties. (note that client is singleton object)
 
@@ -26,12 +26,12 @@ var client = require('redis-pooling')({
             port: "6379"
         }
     });
-``` 
-   
-    
-##Usage Example
+```
 
-####With callbacks
+
+## Usage Example
+
+#### With callbacks
 ```
 //setting value
 client.set(key, value,function(err, data){
@@ -61,7 +61,7 @@ client.incr(key,function(err, data){
 });
 ```
 
-####With Promises
+#### With Promises
 ```
 client.set(key, value).then(function(data){
     //success
@@ -70,16 +70,16 @@ client.set(key, value).then(function(data){
 })
 ```
 
-##Currently available methods
-`set` 
+## Currently available methods
+`set`
 
-`get` 
+`get`
 
-`incr` 
+`incr`
 
-`expire` 
+`expire`
 
-`expireat` 
+`expireat`
 
 `auth`
 
@@ -157,12 +157,12 @@ client.set(key, value).then(function(data){
 
 `sismember`
 
-##config object
+## config object
 
-####maxPoolSize
+#### maxPoolSize
 `maxPoolSize` - default 5
 
-####credentials
+#### credentials
 | Property  | Default   | Description |
 |-----------|-----------|-------------|
 | host      | 127.0.0.1 | IP address of the Redis server |
@@ -188,5 +188,3 @@ client.set(key, value).then(function(data){
 | tls | null | An object containing options to pass to [tls.connect](http://nodejs.org/api/tls.html#tls_tls_connect_port_host_options_callback) to set up a TLS connection to Redis (if, for example, it is set up to be accessible via a tunnel). |
 | prefix | null | A string used to prefix all used keys (e.g. `namespace:test`). Please be aware that the `keys` command will not be prefixed. The `keys` command has a "pattern" as argument and no key and it would be impossible to determine the existing keys in Redis if this would be prefixed. |
 | retry_strategy | function | A function that receives an options object as parameter including the retry `attempt`, the `total_retry_time` indicating how much time passed since the last time connected, the `error` why the connection was lost and the number of `times_connected` in total. If you return a number from this function, the retry will happen exactly after that time in milliseconds. If you return a non-number, no further retry will happen and all offline commands are flushed with errors. Return an error to return that specific error to all offline commands. Example below. |
-
-
