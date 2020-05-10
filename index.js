@@ -1,15 +1,9 @@
 /**
  * Created by melontron on 9/7/16.
  */
-var redis = require('redis');
-var bluebird = require('bluebird');
+const redis = require('redis');
 
-bluebird.promisifyAll(redis.RedisClient.prototype);
-bluebird.promisifyAll(redis.Multi.prototype);
-
-
-
-var RedisPool = function (config) {
+const RedisPool = function (config) {
     var connections = [];
     this.methods = {
         "set": 2,
@@ -35,7 +29,7 @@ var RedisPool = function (config) {
         "hmget": 2,
         "hmset": 3,
         "hset": 3,
-	 "on":2,
+        "on":2,
         "hsetnx": 3,
         "hstrlen": 2,
         "hvals": 1,
@@ -53,7 +47,7 @@ var RedisPool = function (config) {
         "setnx": 2,
         "ttl": 1,
         "setex" : 3,
-	"sadd": 2,
+        "sadd": 2,
         "smembers":1,
         "sismember": 2,
     };
@@ -134,73 +128,35 @@ var RedisPool = function (config) {
         }
     };
 
+    this.promisifyCall = function(method, args){
+      return new Promise((resolve, reject) => {
+        method(...args, (err, val) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(val)
+          }
+        })
+      })
+    }
+
     this.callMethod = function (method, type, key, value, field, callback) {
         var conn = _this.getConnection();
         var client = conn.client;
-        if (typeof callback == "undefined") {
+        const args = [key, value, field].splice(0, type),
+          promise = this.promisifyCall(client[method].bind(client), args)
+            .then((val) => {
+              _this.abandonConnection(conn);
+              return val;
+            })
 
-            switch (type) {
-                case 1:
-                {
-                    return new Promise(function (resolve, reject) {
-                        client[method + 'Async'](key).then(function (val) {
-                            _this.abandonConnection(conn);
-                            resolve(val)
-                        }).catch(reject);
-                    });
-                }
-                case 2:
-                {
-
-                    return new Promise(function (resolve, reject) {
-                        client[method + 'Async'](key, value).then(function (val) {
-                            _this.abandonConnection(conn);
-                            resolve(val)
-                        }).catch(reject);
-                    })
-
-                }
-                case 3:{
-                    return new Promise(function (resolve, reject) {
-                        client[method + 'Async'](key, field ,value).then(function (val) {
-                            _this.abandonConnection(conn);
-                            resolve(val)
-                        }).catch(reject);
-                    })
-                }
-            }
-        } else {
-            if (typeof  callback != "function") {
-                throw new Error('TypeError: callback should be a function');
-            } else {
-                switch (type) {
-                    case 1:
-                    {
-                        client[method](key, function (err, result) {
-                            _this.abandonConnection(conn);
-                            callback(err, result);
-                        });
-                        break;
-                    }
-                    case 2:
-                    {
-                        client[method](key, value, function (err, result) {
-                            _this.abandonConnection(conn);
-                            callback(err, result);
-                        });
-                        break;
-                    }
-                    case 3:{
-                        client[method](key, field, value, function (err, result) {
-                            _this.abandonConnection(conn);
-                            callback(err, result);
-                        });
-                        break;
-                    }
-                }
-
-            }
+        if (typeof callback == "function") {
+          promise.then(callback.bind(null, null), callback)
+        } else if (typeof callback != 'undefined') {
+          throw new Error('TypeError: callback should be a function');
         }
+
+        return promise;
     };
 
     this.abandonConnection = function (connection) {

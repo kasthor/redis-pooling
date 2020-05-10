@@ -53,7 +53,6 @@
     "url": "https://github.com/lordmelique/redis-pooling/issues"
   },
   "dependencies": {
-    "bluebird": "^3.4.6",
     "redis": "^2.6.2"
   },
   "description": "Nodejs module for creating redis connection pool",
